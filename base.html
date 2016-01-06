@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="base.js"></script>
+	<script type="text/javascript">
+	function init () {
+		var f = new DrawField(50, 30, 20, "canvas");
+		var posx = 0, posy = 0;
+
+		setInterval(function() {
+			posx++
+			if (posx == 50) {
+				posx = 0;
+				posy++;
+			}
+
+			f.clear();
+			f.drawGrid();
+			f.fillPixel(posx, posy);
+		}, 50);
+
+	}
+
+	</script>
+</head>
+<body onload="init()">
+<canvas id="canvas"></canvas>
+</body>
+</html>
