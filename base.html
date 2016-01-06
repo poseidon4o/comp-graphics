@@ -10,13 +10,15 @@
 		setInterval(function() {
 			if (++posx == 50) {
 				posx = 0;
-				posy++;
+				if(++posy == 30) {
+					posy = 0;
+				}
 			}
 
 			f.clear();
 			f.drawGrid();
 			f.fillPixel(posx, posy);
-		}, 50);
+		}, 13);
 
 	}
 
