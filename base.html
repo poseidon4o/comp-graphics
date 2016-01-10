@@ -26,6 +26,60 @@
 		}
 	}
 
+	function bresenham_circle(x0, y0, radius) {
+		var x = radius;
+		var y = 0;
+		var decisionOver2 = 1 - x;
+
+		while(x >= y){
+			f.fillPixel( x + x0,  y + y0);
+			f.fillPixel( y + x0,  x + y0);
+			f.fillPixel(-x + x0,  y + y0);
+			f.fillPixel(-y + x0,  x + y0);
+			f.fillPixel(-x + x0, -y + y0);
+			f.fillPixel(-y + x0, -x + y0);
+			f.fillPixel( x + x0, -y + y0);
+			f.fillPixel( y + x0, -x + y0);
+			y++;
+			if (decisionOver2<=0){
+				decisionOver2 += 2 * y + 1;   // Change in decision criterion for y -> y+1
+			}else{
+				x--;
+				decisionOver2 += 2 * (y - x) + 1;   // Change for y -> y+1, x -> x-1
+			}
+		}
+	}
+
+	function rounding_crcle(xc, yc, r) {
+		var x = 0, y = r;
+		f.fillPixel(xc, yc + r);
+		f.fillPixel(xc, yc - r);
+		f.fillPixel(xc + r, yc);
+		f.fillPixel(xc - r, yc);
+
+		var sym4 = function(xc, yc, x, y) {
+			f.fillPixel(xc + x, yc + y);
+			f.fillPixel(xc + x, yc - y);
+			f.fillPixel(xc - x, yc + y);
+			f.fillPixel(xc - x, yc - y);
+		}
+
+		var sym8 = function(xc, yc, x, y) {
+			sym4(xc, yc, x, y);
+			sym4(xc, yc, y, x);
+		}
+
+		while (x < y) {
+			x++;
+			y = parseInt(Math.sqrt(r * r - x * x));
+			sym8(xc, yc, x, y);
+		}
+		if (x == y) {
+			sym4(xc, yc, x, y);
+		}
+
+	}
+
 
 	function init () {
 		f = new DrawField(200, 120, 5, "canvas");
@@ -42,7 +96,7 @@
 			}
 
 			f.clear();
-			bresenham(0, 0, posx, posy);
+			rounding_crcle(posx, posy, posy);
 			f.drawGrid();
 		}, 3);
 
