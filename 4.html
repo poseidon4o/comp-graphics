@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="base.js"></script>
+	<script type="text/javascript">
+	var f;
+
+	var color = "#00ff00";
+
+	function bresenham_line(x0, y0, x1, y1) {
+		var dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+		var dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+		var err = (dx>dy ? dx : -dy)/2;
+
+		while (true) {
+			f.fillPixel(x0, y0, color);
+			if (x0 === x1 && y0 === y1) break;
+			var e2 = err;
+			if (e2 > -dx) {
+				err -= dy;
+				x0 += sx;
+			}
+			if (e2 < dy) {
+				err += dx;
+				y0 += sy;
+			}
+		}
+	}
+
+	function rounding_line(x1, y1, x2, y2) {
+		var dx = Math.abs(x2 - x1);
+		var dy = Math.abs(y2 - y1);
+		if (reverse = (dx < dy)) {
+			var d = x1; x1 = y1; y1 = d;
+			d = x2; x2 = y2; y2 = d;
+			d = dx; dx = dy; dy = d;
+		}
+
+		var incX = (x1 <= x2) ? 1 : -1;
+		var incY = dy / dx;
+		var x = x1, y = y1, n = dx + 1;
+		while (n--) {
+			if (reverse) {
+				f.fillPixel(parseInt(y), x);
+			} else {
+				f.fillPixel(x, parseInt(y));
+			}
+			x += incX;
+			y += incY;
+		}
+	}
+
+	function bresenham_circle(x0, y0, radius) {
+		var x = radius;
+		var y = 0;
+		var decisionOver2 = 1 - x;
+
+		while(x >= y){
+			f.fillPixel( x + x0,  y + y0);
+			f.fillPixel( y + x0,  x + y0);
+			f.fillPixel(-x + x0,  y + y0);
+			f.fillPixel(-y + x0,  x + y0);
+			f.fillPixel(-x + x0, -y + y0);
+			f.fillPixel(-y + x0, -x + y0);
+			f.fillPixel( x + x0, -y + y0);
+			f.fillPixel( y + x0, -x + y0);
+			y++;
+			if (decisionOver2<=0){
+				decisionOver2 += 2 * y + 1;   // Change in decision criterion for y -> y+1
+			}else{
+				x--;
+				decisionOver2 += 2 * (y - x) + 1;   // Change for y -> y+1, x -> x-1
+			}
+		}
+	}
+
+	function rounding_crcle(xc, yc, r) {
+		var x = 0, y = r;
+		f.fillPixel(xc, yc + r);
+		f.fillPixel(xc, yc - r);
+		f.fillPixel(xc + r, yc);
+		f.fillPixel(xc - r, yc);
+
+		var sym4 = function(xc, yc, x, y) {
+			f.fillPixel(xc + x, yc + y);
+			f.fillPixel(xc + x, yc - y);
+			f.fillPixel(xc - x, yc + y);
+			f.fillPixel(xc - x, yc - y);
+		}
+
+		var sym8 = function(xc, yc, x, y) {
+			sym4(xc, yc, x, y);
+			sym4(xc, yc, y, x);
+		}
+
+		while (x < y) {
+			x++;
+			y = parseInt(Math.sqrt(r * r - x * x));
+			sym8(xc, yc, x, y);
+		}
+		if (x == y) {
+			sym4(xc, yc, x, y);
+		}
+	}
+
+	var stopFilling = false;
+
+	function recursiveFiller (x, y, z) {
+		if (f.getPixel(x, y)) {
+			return;
+		}
+
+		f.fillPixel(x, y, "#ffaa00");
+
+		if (!stopFilling) setTimeout(recursiveFiller.bind(this, x + 1, y), 100);
+		if (!stopFilling) setTimeout(recursiveFiller.bind(this, x - 1, y), 100);
+		if (!stopFilling) setTimeout(recursiveFiller.bind(this, x, y + 1), 100);
+		if (!stopFilling) setTimeout(recursiveFiller.bind(this, x, y - 1), 100);
+	}
+
+	var topLeft = null, bottomRight = null, start = null;
+
+	// function calct (r, q, tin, tout) {
+	// 	var t;
+	// 	if (r > 0) {
+	// 		t = q/r;
+	// 		if(t < tin) {
+	// 			return 0;
+	// 		}
+	// 		tout = Math.min(t, tout);
+	// 	} else if (r < 0) {
+	// 		t = q/r;
+	// 		if (t > tout) {
+	// 			return 0;
+	// 		}
+	// 		tin Math.max(t, tin);
+	// 	} else if (q < 0) {
+	// 		return 0;
+	// 	}
+	// 	return 1;
+	// }
+
+	function clip(x0, y0, x1, y1, xMin, yMin, xMax, yMax) {
+		var line = {
+			x0: x0, y0: y0, x1: x1, y1: y1
+		}
+        var u1 = 0, u2 = 1;
+        var x0 = line.x0, y0 = line.y0, x1 = line.x1, y1 = line.y1;
+        var dx = x1 - x0, dy = y1 - y0;
+        var p = [-dx, dx, -dy, dy];
+        var q = [x0 - xMin, xMax - x0, y0 - yMin, yMax - y0];
+        for (var i = 0; i < 4; i++) {
+            if (p[i] == 0) {
+                if (q[i] < 0) {
+                    return null;
+                }
+            } else {
+                var u = q[i] / p[i];
+                if (p[i] < 0) {
+                    u1 = Math.max(u, u1);
+                } else {
+                    u2 = Math.min(u, u2);
+                }
+            }
+        }
+        if (u1 > u2) {
+            return null;
+        }
+        var nx0, ny0, nx1, ny1;
+        nx0 = parseInt(x0 + u1 * dx);
+        ny0 = parseInt(y0 + u1 * dy);
+        nx1 = parseInt(x0 + u2 * dx);
+        ny1 = parseInt(y0 + u2 * dy);
+
+        color = "#ff0000";
+        bresenham_line(nx0, ny0, nx1, ny1);
+        color = "#00ff00";
+    }
+
+
+	function mdown () {
+
+
+		if (topLeft == null) {
+			f.fillPixel(f.mouse.x, f.mouse.y, "#ff0000");
+			topLeft = {}
+			topLeft.x = f.mouse.x;
+			topLeft.y = f.mouse.y;
+		} else if (bottomRight == null) {
+			f.fillPixel(f.mouse.x, f.mouse.y, "#ff0000");
+			bottomRight = {}
+			bottomRight.x = f.mouse.x;
+			bottomRight.y = f.mouse.y;
+		} else if (start == null) {
+			f.fillPixel(f.mouse.x, f.mouse.y, "#ff0000");
+			start = {}
+			start.x = f.mouse.x;
+			start.y = f.mouse.y;
+		} else {
+			bresenham_line(start.x, start.y, f.mouse.x, f.mouse.y);
+
+			bresenham_line(topLeft.x, topLeft.y, bottomRight.x, topLeft.y);
+			bresenham_line(topLeft.x, topLeft.y, topLeft.x, bottomRight.y);
+
+			bresenham_line(topLeft.x, bottomRight.y, bottomRight.x, bottomRight.y);
+			bresenham_line(bottomRight.x, topLeft.y, bottomRight.x, bottomRight.y);
+
+			clip(start.x, start.y, f.mouse.x, f.mouse.y,
+				Math.min(topLeft.x, bottomRight.x),
+				Math.min(topLeft.y, bottomRight.y),
+				Math.max(topLeft.x, bottomRight.x),
+				Math.max(topLeft.y, bottomRight.y)
+			)
+
+		}
+	}
+
+
+	function init () {
+		f = new DrawField(130, 60, 10, "canvas");
+		f.drawGrid();
+	}
+
+	</script>
+</head>
+<body onload="init()">
+<canvas onmousedown="javascript:mdown();" id="canvas"></canvas>
+</body>
+</html>
