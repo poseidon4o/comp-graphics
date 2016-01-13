@@ -17,7 +17,7 @@ DrawField.prototype.clear = function() {
 };
 
 DrawField.prototype.drawGrid = function() {
-	this.ctx.fillStyle = "0xff0000";
+	this.ctx.fillStyle = "#ff0000";
 
 	this.ctx.strokeRect(1, 1, this.w - 1, this.h - 1);
 	this.ctx.moveTo(0, 0);
@@ -55,7 +55,7 @@ DrawField.prototype.clamp = function(v, min, max) {
 DrawField.prototype.fillPixel = function(x, y) {
 	x = this.clamp(x, 0, this.resX);
 	y = this.clamp(y, 0, this.resY);
-	this.ctx.fillStyle = "0x00ff00";
+	this.ctx.fillStyle = "#00ff00";
 	this.ctx.fillRect(x * this.tileSize + 1, y * this.tileSize + 1, this.tileSize - 1, this.tileSize - 1);
 };
 
