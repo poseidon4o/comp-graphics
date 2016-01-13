@@ -62,7 +62,7 @@ DrawField.prototype.drawGrid = function() {
 };
 
 DrawField.prototype.clamp = function(v, min, max) {
-	return Math.max(min, Math.min(v, max));
+	return parseInt(Math.max(min, Math.min(v, max)));
 };
 
 DrawField.prototype.fillPixel = function(x, y, color) {
@@ -81,5 +81,7 @@ DrawField.prototype.clearPixel = function(x, y) {
 };
 
 DrawField.prototype.getPixel = function(x, y) {
+	x = this.clamp(x, 0, this.resX);
+	y = this.clamp(y, 0, this.resY);
 	return this.pixels[x + " " + y] == true;
 };
