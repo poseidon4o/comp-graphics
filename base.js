@@ -10,10 +10,23 @@ function DrawField (resX, resY, tileSize, id) {
 
 	this.ctx = this.canvas.getContext("2d");
 	this.ctx.lineWidth = 1;
+
+	this.pixels = [];
+	this.mouse = {};
+
+	this.mouse.x = this.mouse.y = 0;
+
+	var bbox = this.canvas.getBoundingClientRect();
+	var self = this;
+	this.canvas.addEventListener('mousemove', function(event) {
+		self.mouse.x = parseInt((event.clientX - bbox.left) / self.tileSize);
+		self.mouse.y = parseInt((event.clientY - bbox.top - 5) / self.tileSize);
+	});
 }
 
 DrawField.prototype.clear = function() {
 	this.ctx.clearRect(0, 0, this.w, this.h);
+	this.pixels = [];
 };
 
 DrawField.prototype.drawGrid = function() {
@@ -52,15 +65,21 @@ DrawField.prototype.clamp = function(v, min, max) {
 	return Math.max(min, Math.min(v, max));
 };
 
-DrawField.prototype.fillPixel = function(x, y) {
+DrawField.prototype.fillPixel = function(x, y, color) {
 	x = this.clamp(x, 0, this.resX);
 	y = this.clamp(y, 0, this.resY);
-	this.ctx.fillStyle = "#00ff00";
+	this.ctx.fillStyle = (typeof color != 'undefined' ? color : "#00ff00");
 	this.ctx.fillRect(x * this.tileSize + 1, y * this.tileSize + 1, this.tileSize - 1, this.tileSize - 1);
+
+	this.pixels[x + " " + y] = true;
 };
 
 DrawField.prototype.clearPixel = function(x, y) {
 	x = this.clamp(x, 0, this.resX);
 	y = this.clamp(y, 0, this.resY);
 	this.ctx.clearRect(x * this.tileSize + 1, y * this.tileSize + 1, this.tileSize - 1, this.tileSize - 1);
+};
+
+DrawField.prototype.getPixel = function(x, y) {
+	return this.pixels[x + " " + y] == true;
 };
